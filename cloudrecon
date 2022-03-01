@@ -1,0 +1,54 @@
+#Parameters to be passed to the script
+
+#<keytab> <kerberos principal> <src path> <tkn path> <cloud path> <partition> <recon type> <tgt db> <tgt table>
+
+KERBEROS_KEYTAB_PATH=$1
+
+KERBEROS_PRINCIPAL=$2
+
+storageAcc=$3
+
+basePath=$4
+
+stagingDir=$5
+
+db=$6
+
+table=$7
+
+partition=$8
+
+businessDate=$9
+
+tgtDB=${10}
+
+tgtTable=${11}
+
+ctrl_file_path=${12}
+
+kinit -kt ${KERBEROS_KEYTAB_PATH} ${KERBEROS_PRINCIPAL}
+
+export SPARK_MAJOR_VERSION=2
+export DATA_COPY_HOME=`dirname $PWD`
+
+DATA_COPY_LOGS_DIR="<archivelocation>"
+dt=`date +%Y-%m-%d-%H-%M-%S`
+AppName="REVRECON_${db}_${table}"
+
+echo "Database:${db}" >> ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
+echo "table:${table}" >> ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
+echo "Appname:${AppName}" >> ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
+
+spark-submit --class com.cloudera.ps.CloudReconcile \
+--master yarn \
+--name ${AppName} \
+--deploy-mode cluster \
+--driver-memory 10G \
+--executor-memory 4G \
+--executor-cores 4 --num-executors 8 --queue default \
+--conf "spark.driver.cores=10" \
+--principal ${KERBEROS_PRINCIPAL} \
+--keytab ${KERBEROS_KEYTAB_PATH} \
+--conf "spark.hadoop.hadoop.security.credential.provider.path=jceks://hdfs/hdp/apps/clouddatacopy/cdpstoragedatacopy.jceks" \
+--conf spark.yarn.maxAppAttempts=2 \
+$DATA_COPY_HOME/lib/CloudReconcile-1.0-SNAPSHOT.jar $storageAcc $basePath $stagingDir $db $table $partition $businessDate $tgtDB $tgtTable $ctrl_file_path 2>&1 >/dev/null | grep "Submit.*application" >> ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
