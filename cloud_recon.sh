@@ -51,7 +51,7 @@ echo "Appname:${AppName}" >> ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
 --conf spark.yarn.maxAppAttempts=2 \
 $DATA_COPY_HOME/lib/CloudReconcile-1.1-SNAPSHOT.jar \
 $src_system $country $abfs_container $hdfs_parent_dir $sri_open_staging_dir $sri_non_open_staging_dir \
-$storage_staging_dir $databases $tables $partitionColumnMap $partition $reconDB $reconTable \
+$storage_staging_dir $databases \"$tables\" $partitionColumnMap $partition $reconDB $reconTable \
 $ctrl_file_path 2>&1 >/dev/null|tee -a ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
 #| grep "Submit.*application" >> ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
 
