@@ -40,3 +40,10 @@ spark-submit --class com.cloudera.ps.ReconcileAllTables \
  --conf "spark.hadoop.hadoop.security.credential.provider.path=jceks://hdfs/secrets/cdpstoragesit.jceks" \
  --conf spark.yarn.maxAppAttempts=1 \
 $SDM_HOME/recon_cdp/Reconcile-1.6-SNAPSHOT.jar $SRCSYSTEM $COUNTRY $HDFS_PARENT_DIR $ABFS_PREFIX $CONSUMED_TABLES $PARTTIION $DATABASE $DB_PART_MAP $RECON_DB $RECON_TABLE 2>&1 >/dev/null|tee -a ${DATA_COPY_LOGS_DIR}/${AppName}_${dt}.log
+
+if [ ${PIPESTATUS[0]} -eq 0 ]
+then
+  exit 0
+else
+  exit 1
+fi
